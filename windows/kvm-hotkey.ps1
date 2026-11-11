@@ -45,7 +45,8 @@ public static class KvmHotkey {
     }
 
     // Ctrl+Alt+K. Returns error text if the hotkey can't be registered; otherwise loops forever.
-    public static string Run(uint code, Action<string> log) {
+    public static string Run(uint code, string logPath) {
+        Action<string> log = m => { try { System.IO.File.AppendAllText(logPath, DateTime.Now.ToString("s") + "  " + m + Environment.NewLine); } catch {} };
         const uint MOD_ALT = 1, MOD_CONTROL = 2, MOD_NOREPEAT = 0x4000, VK_K = 0x4B;
         if (!RegisterHotKey(IntPtr.Zero, 1, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, VK_K))
             return "RegisterHotKey failed, error " + Marshal.GetLastWin32Error() + " (combo probably taken by another app)";
@@ -59,5 +60,5 @@ public static class KvmHotkey {
 }
 '@
 
-$err = [KvmHotkey]::Run([uint32]$Code, [Action[string]]{ param($m) Log $m })
+$err = [KvmHotkey]::Run([uint32]$Code, $log)
 Log $err
