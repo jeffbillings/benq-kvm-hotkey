@@ -22,7 +22,12 @@ Copy-Item "$PSScriptRoot\kvm-hotkey.ps1", "$PSScriptRoot\kvm-switch.ps1" $dir -F
 Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\KVM hotkey.lnk" -ErrorAction SilentlyContinue
 
 $action    = New-ScheduledTaskAction -Execute $ps -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$dir\kvm-hotkey.ps1`" -Code $Code"
-$trigger   = New-ScheduledTaskTrigger -AtLogOn -User $user
+# At logon, plus every 5 minutes: if the listener is already running the new instance is
+# ignored (MultipleInstances IgnoreNew); if something closed it, this brings it back.
+$trigger   = @(
+    (New-ScheduledTaskTrigger -AtLogOn -User $user),
+    (New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5))
+)
 $settings  = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 999 `
                 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
                 -MultipleInstances IgnoreNew

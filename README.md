@@ -21,7 +21,7 @@ powershell -ExecutionPolicy Bypass -File windows\install.ps1
 
 - `windows/kvm-hotkey.ps1`: background listener that registers Ctrl+Alt+K and sets every
   monitor to input 19. It's installed to `%LOCALAPPDATA%\kvm-switch` and run by a Task
-  Scheduler task ("KVM hotkey") at logon, which restarts it if it exits. It logs to
+  Scheduler task ("KVM hotkey") at logon and every 5 minutes, which brings it back if it exits. It logs to
   `kvm-hotkey.log` in that folder.
 - `windows/kvm-switch.ps1`: one-off tool. `-List` shows each monitor's current input code;
   `-Inputs 19,19` sets them.
@@ -33,7 +33,10 @@ Lessons learned:
 - `powershell -File script.ps1 -Inputs 19,19` passes `"19,19"` as one string. An `[int[]]`
   parameter turns that into `1919`, so the script splits the string itself.
 - A listener started by another program can die when that program exits. Task Scheduler
-  runs it on its own and restarts it.
+  runs it on its own.
+- Even under Task Scheduler it was once closed from outside (exit `0xC000013A`), which the
+  task's restart-on-failure setting ignores. The task also re-runs every 5 minutes; if the
+  listener is still running that run is skipped, otherwise it comes back.
 
 ## Mac: hotkey → PC
 
