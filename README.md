@@ -32,6 +32,8 @@ Lessons learned:
   instead, which is reliable and switches faster.
 - `powershell -File script.ps1 -Inputs 19,19` passes `"19,19"` as one string. An `[int[]]`
   parameter turns that into `1919`, so the script splits the string itself.
+- On Windows 11, launching `powershell.exe -WindowStyle Hidden` from a task still opens a
+  Windows Terminal window that stays open. The task runs it via `conhost.exe --headless`.
 - A listener started by another program can die when that program exits. Task Scheduler
   runs it on its own.
 - Even under Task Scheduler it was once closed from outside (exit `0xC000013A`), which the

@@ -21,7 +21,10 @@ Copy-Item "$PSScriptRoot\kvm-hotkey.ps1", "$PSScriptRoot\kvm-switch.ps1" $dir -F
 # older installs used a Startup-folder shortcut
 Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\KVM hotkey.lnk" -ErrorAction SilentlyContinue
 
-$action    = New-ScheduledTaskAction -Execute $ps -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$dir\kvm-hotkey.ps1`" -Code $Code"
+# conhost --headless runs PowerShell with no window at all. Launching powershell.exe
+# directly opens a Windows Terminal window on Windows 11 (it ignores -WindowStyle Hidden).
+$conhost   = "$env:WINDIR\System32\conhost.exe"
+$action    = New-ScheduledTaskAction -Execute $conhost -Argument "--headless `"$ps`" -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$dir\kvm-hotkey.ps1`" -Code $Code"
 # At logon, plus every 5 minutes: if the listener is already running the new instance is
 # ignored (MultipleInstances IgnoreNew); if something closed it, this brings it back.
 $trigger   = @(
